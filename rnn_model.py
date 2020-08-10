@@ -8,11 +8,10 @@ from tensorflow.contrib.layers.python.layers import initializers
 
 class TRNNConfig(object):
     """RNN配置参数"""
-
     # 模型参数
     embedding_dim = 64      # 词向量维度
-    seq_length = 300        # 序列长度600
-    seq_length2=64
+    seq_length = 350        # 序列长度设置为600可能会OOM
+    seq_length2=64          #解码端的序列长度
 
     num_classes = 10        # 类别数
     vocab_size = 5000       # 词汇表达小
@@ -25,26 +24,28 @@ class TRNNConfig(object):
     dropout_keep_prob = 0.5 # dropout保留比例
     learning_rate = 1e-3    # 学习率
 
-    batch_size = 64         # 每批训练大小 128
-    num_epochs = 15         # 总迭代轮次
+    batch_size = 64        # 每批训练大小 128
+    num_epochs = 10       # 总迭代轮次
 
     print_per_batch = 100    # 每多少轮输出一次结果
     save_per_batch = 10      # 每多少轮存入tensorboard
 
-    clip = 5
+    clip = 5                   #梯度裁剪的阈值
+    isTrain=False             #是否为训练模式
 
 class TextRNN(object):
     """文本分类，RNN模型"""
     def __init__(self, config):
         self.config = config
-
         # 三个待输入的数据
         self.input_x = tf.placeholder(tf.int32, [None, self.config.seq_length], name='input_x')
         self.input_y = tf.placeholder(tf.float32, [None, self.config.num_classes], name='input_y')
         self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
         self.global_step = tf.Variable(0, trainable=False)
+        #解码端LSTM层记忆单元和隐藏单元的初始值
         self.s0 = tf.zeros([tf.shape(self.input_x)[0], self.config.hidden_dim], name='s0')
         self.c0 = tf.zeros([tf.shape(self.input_x)[0], self.config.hidden_dim], name='c0')
+
         self.initializer = initializers.xavier_initializer()
         self.rnn()
 
@@ -114,7 +115,8 @@ class TextRNN(object):
             s=self.s0
             c=self.c0
             a=Bidirectional(LSTM(self.config.hidden_dim,return_sequences=True))(embedding_inputs)
-            a=BatchNormalization()(a)
+            if self.config.isTrain:
+                a=BatchNormalization()(a)
 
             for t in range(self.config.seq_length2):
                 context=one_step_attention(a,s)
@@ -124,7 +126,8 @@ class TextRNN(object):
         with tf.name_scope("score"):
             # 全连接层，后面接dropout以及relu激活
             fc = tf.layers.dense(last, self.config.hidden_dim, name='fc1')
-            fc = tf.contrib.layers.dropout(fc, self.keep_prob)
+            if self.config.isTrain:
+                fc = tf.contrib.layers.dropout(fc, self.keep_prob)
             fc = tf.nn.relu(fc)
 
             # 分类器

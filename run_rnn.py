@@ -89,6 +89,7 @@ def train():
     writer.add_graph(session.graph)
 
     print('Training and evaluating...')
+    print('当前训练模式是否开启', model.config.isTrain)
     start_time = time.time()
     total_batch = 0  # 总批次
     best_acc_val = 0.0  # 最佳验证集准确率
@@ -110,7 +111,7 @@ def train():
             if total_batch % config.print_per_batch == 0:
                 # 每多少轮次输出在训练集和验证集上的性能
                 feed_dict[model.keep_prob] = 1.0
-                loss_train, acc_train = session.run([model.loss, model.acc], feed_dict=feed_dict)
+                loss_train, acc_train= session.run([model.loss, model.acc], feed_dict=feed_dict)
                 loss_val, acc_val = evaluate(session, x_val, y_val)  # todo
 
                 if acc_val > best_acc_val:
@@ -155,6 +156,7 @@ def test():
     saver.restore(sess=session, save_path=save_path)  # 读取保存的模型
 
     print('Testing...')
+    print('当前训练模式是否开启', model.config.isTrain)
     loss_test, acc_test = evaluate(session, x_test, y_test)
     msg = 'Test Loss: {0:>6.2}, Test Acc: {1:>7.2%}'
     print(msg.format(loss_test, acc_test))
@@ -198,9 +200,11 @@ if __name__ == '__main__':
     categories, cat_to_id = read_category()
     words, word_to_id = read_vocab(vocab_dir)
     config.vocab_size = len(words)
-    model = TextRNN(config)
     os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
     if sys.argv[1] == 'train':
+        config.isTrain=True
+        model = TextRNN(config)
         train()
     else:
+        model = TextRNN(config)
         test()
