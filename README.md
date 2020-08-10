@@ -27,6 +27,8 @@
 运行 `python run_cnn.py train`，可以开始训练。
 ### 测试
 运行 `python run_cnn.py test` 在测试集上进行测试。
+## 预测
+为方便预测，`predict.py` 提供了 CNN 模型的预测方法。
 
 ### RNN模型
 ### 训练与验证
@@ -35,6 +37,3 @@
 attention-LSTM的模型框架可用在image下查看到。
 ### 测试
 运行 `python run_rnn.py test` 在测试集上进行测试。
-
-## 预测
-为方便预测，`predict.py` 提供了 CNN 模型的预测方法。
