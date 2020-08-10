@@ -31,7 +31,7 @@
 ### RNN模型
 ### 训练与验证
 运行 `python run_rnn.py train`，可以开始训练。
-有必要指出的是，为了使用有限的GPU计算LSTM间的注意力，本项目在实现代码的时候，将第一层LSTM的序列长度降为了300，第二层LSTM的序列长度设置为了64，而bitchsize则降为了64。
+有必要指出的是，为了使用有限的GPU计算LSTM间的注意力，同使用textCNN相比，本项目在实现代码的时候，在配置类中将第一层LSTM的序列长度降为了350，第二层LSTM的序列长度设置为了64，而bitchsize则降为了64。
 attention-LSTM的模型框架可用在image下查看到。
 ### 测试
 运行 `python run_rnn.py test` 在测试集上进行测试。
